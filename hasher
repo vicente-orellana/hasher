@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+
+import sys, hashlib, argparse
+from pyfiglet import figlet_format
+
+# set max buffer size
+BUFSIZE = 65536
+
+# create argument parser
+parser = argparse.ArgumentParser(description="Returns the hash output(s) for a given input string.")
+
+# add arguments
+parser.add_argument("-a", "--algorithm", help="Returns the hash output of the input string for the specified hashing algorithm. Available options: md5, sha1, sha256, sha512")
+
+parser.add_argument("-i", "--input", help="Specifies the string to be hashed.")
+
+parser.add_argument("-f", "--file", help="Specifies the file to be hashed.")
+
+# parse the arguments
+args = parser.parse_args()
+
+# use input string or filename; otherwise, get a string
+myinput = args.input if args.input else args.file if args.file else input("Enter a string: ")
+myinput = myinput.encode("utf-8")
+
+# populate list of valid hash algorithms
+valid_algorithms = ["md5", "sha1", "sha256", "sha512"]
+
+# check if algorithm argument matches valid algorithms; otherwise, display all hash outputs
+algorithm = args.algorithm.lower() if args.algorithm and args.algorithm.lower() in valid_algorithms else "all"
+
+# create new hashes
+md5 = hashlib.md5()
+sha1 = hashlib.sha1()
+sha256 = hashlib.sha256()
+sha512 = hashlib.sha512()
+
+# hash algorithm functions
+def update_hashes(input):
+    md5.update(input)
+    sha1.update(input)
+    sha256.update(input)
+    sha512.update(input)
+
+def get_md5():
+    print("md5: %s" % md5.hexdigest())
+
+def get_sha1():
+    print("sha1: %s" % sha1.hexdigest())
+
+def get_sha256():
+    print("sha256: %s" % sha256.hexdigest())
+
+def get_sha512():
+    print("sha512: %s" % sha512.hexdigest())
+
+# if file is set, open it, read into buffer, and update hashes
+if args.file:
+    with open(myinput, 'rb') as f:
+        while True:
+            data = f.read(BUFSIZE)
+            if not data:
+                break
+            update_hashes(data)
+
+# otherwise, simply fetch all hashes
+else:
+    update_hashes(myinput)
+
+# display hash outputs
+print("")
+print(figlet_format("Hasher", "banner3"))
+
+if args.file:
+    print("Hash Digest(s) for file `%s`:\n" % args.file)
+else:
+    print("\nHash Digest(s) for string `%s`:" % myinput.decode())
+
+if algorithm == "md5":
+    get_md5()
+    print("")
+elif algorithm == "sha1":
+    get_sha1()
+    print("")
+elif algorithm == "sha256":
+    get_sha256()
+    print("")
+elif algorithm == "sha512":
+    get_sha512()
+    print("")
+else:
+    get_md5()
+    get_sha1()
+    get_sha256()
+    get_sha512()
+    print("")
